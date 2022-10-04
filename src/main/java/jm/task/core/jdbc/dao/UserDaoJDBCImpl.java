@@ -69,6 +69,7 @@ public class UserDaoJDBCImpl implements UserDao {
             prepar.setByte(3, age);
             prepar.executeUpdate();
             connect.commit();
+            prepar.close();
         } catch (SQLException e) {
             e.printStackTrace();
             try {
