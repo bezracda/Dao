@@ -1,21 +1,26 @@
 package jm.task.core.jdbc.model;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
-@Table
+import javax.persistence.*;
+
+//!!! @Getter
+//!!! @Setter
+@Entity
+@Table (name = "user")
 public class User {
+
+    private static final long serialVersionUID = 1L;
     @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY) // генерация id через автоинкремент в БД
     private Long id;
 
-    @Column
+    @Column (name = "name")// в скобках прописать, если нужно уточнение
     private String name;
 
-    @Column
+    @Column(name = "lastName")
     private String lastName;
 
-    @Column
+    @Column(name = "age")
     private Byte age;
 
     public User() {
@@ -69,4 +74,4 @@ public class User {
     public void setAge(Byte age) {
         this.age = age;
     }
-    }
+}
