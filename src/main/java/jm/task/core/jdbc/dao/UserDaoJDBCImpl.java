@@ -1,16 +1,9 @@
 package jm.task.core.jdbc.dao;
-import java.sql.DriverManager;
-import com.sun.xml.bind.v2.model.core.ID;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.Session;
-import javax.management.Query;
 import java.sql.*;
 import java.util.*;
-import static org.hibernate.hql.internal.antlr.HqlTokenTypes.WHERE;
-import static org.hibernate.sql.ast.Clause.LIMIT;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
@@ -30,12 +23,19 @@ public class UserDaoJDBCImpl implements UserDao {
         //РАБОТАЕТ
         try {
             Statement  st = connect.createStatement();
+            connect.setAutoCommit(false);
             String sqlCommand = "CREATE TABLE users (Id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100), lastName VARCHAR(100), age INT)";
             st.executeUpdate(sqlCommand);
+            connect.commit();
+            st.close();
         } catch (SQLException e) {
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             System.out.println("Такая таблица уже есть!");
         }
-
 
     }
 
@@ -43,10 +43,17 @@ public class UserDaoJDBCImpl implements UserDao {
         // РАБОТАЕТ
         try {
             Statement  st = connect.createStatement();
+            connect.setAutoCommit(false);
             String sqlCommand = "DROP TABLE IF EXISTS users";
             st.executeUpdate(sqlCommand);
+            connect.commit();
+            st.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
     }
@@ -56,12 +63,19 @@ public class UserDaoJDBCImpl implements UserDao {
         try {
             String sqlCommand = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)";
             PreparedStatement prepar = connect.prepareStatement(sqlCommand);
+            connect.setAutoCommit(false);
             prepar.setString(1, name);
             prepar.setString(2, lastName);
             prepar.setByte(3, age);
             prepar.executeUpdate();
+            connect.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -70,9 +84,13 @@ public class UserDaoJDBCImpl implements UserDao {
         try {
             String sqlCommand = "DELETE FROM users WHERE id = ?";
             PreparedStatement prepar = connect.prepareStatement(sqlCommand);
+            connect.setAutoCommit(false);
             prepar.setLong(1, id);
             prepar.executeUpdate();
+            connect.commit();
+            prepar.close();
         } catch (SQLException e) {
+            connect.rollback();
             System.out.println("По данному ID элемент не найден");
         }
 
@@ -87,6 +105,7 @@ public class UserDaoJDBCImpl implements UserDao {
         try {
             list = new ArrayList<>();
             st = connect.createStatement();
+            connect.setAutoCommit(false);
             ResultSet rs = st.executeQuery("select * from users");
             while (rs.next()) {
                 String str = rs.getString("name");
@@ -95,11 +114,20 @@ public class UserDaoJDBCImpl implements UserDao {
                 User user = new User(str, str1, i);
                 list.add(user);
 
+
             }
+            connect.commit();
+            rs.close();
+            st.close();
             System.out.println(list);
 
 
         } catch (SQLException e) {
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             throw new RuntimeException(e);
         }
         return list;
@@ -109,9 +137,17 @@ public class UserDaoJDBCImpl implements UserDao {
         //РАБОТАЕТ
         try {
             Statement  st = connect.createStatement();
+            connect.setAutoCommit(false);
             String sqlCommand = "DELETE FROM users ";
             st.executeUpdate(sqlCommand);
+            connect.commit();
+            st.close();
         } catch (SQLException e) {
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             System.out.println("Таблица уже пуста!");
         }
 
